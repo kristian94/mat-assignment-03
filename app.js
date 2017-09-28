@@ -40,9 +40,13 @@ console.log('union, intersect, difference');
 const x = new Set([1, 2, 3, 4, 5, 6, 7, 8]);
 const y = new Set([5, 6, 7, 8, 9, 10, 11, 12]);
 
-console.log(x.union(y));
-console.log(x.intersect(y));
-console.log(x.difference(y));
+console.log('')
+console.log(`x:             ${x.array}`)
+console.log(`y:             ${y.array}`)
+console.log('')
+console.log(`union:         ${x.union(y)}`);
+console.log(`intersect:     ${x.intersect(y)}`);
+console.log(`difference:    ${x.difference(y)}`);
 
 
 
