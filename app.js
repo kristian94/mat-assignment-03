@@ -1,53 +1,46 @@
 const Set = require('./set');
+const INFINITY = '$'
 
-const a = new Set([1, [2, 3, 4], 5]);
-const b = new Set([1, '...', 100]);
+
 const z = new Set([0, '...']);
 const n = new Set([1, '...']);
-const r = new Set(['...'], {naturalOnly: false});
+const a = new Set([1, '...', 100]);
+const b = new Set([15, '...', 50]);
+const c = new Set([1, 2, 3, 4]);
+const d = new Set([1, '...', 5, 20, '...', 30]);
+const e = new Set([1, '...', 20]);
+const f = new Set([10, '...', 30]);
 
-console.log('following should be true:');
+console.log(`67 is a member of n: ${n.isMember(67)}`);
+console.log(`0 is a member of n: ${n.isMember(0)}`);
+console.log(`55 is a member of a: ${a.isMember(55)}`);
+console.log('');
 
-// contains
-console.log(a.contains([2, 3, 4]));
-console.log(b.contains(5));
-console.log(b.contains(77));
-console.log(r.contains(55));
-console.log(r.contains(1200));
-console.log(r.contains(1.45));
+console.log(`intersection of `);
+console.log(`e ${e}`);
+console.log(`and`);
+console.log(`f ${f}`);
+console.log('===========');
+console.log(`${e.intersect(f)}`);
+console.log(``);
+console.log(``);
 
-// isSubset
-console.log(b.isSubset([3, 4, 5]));
+console.log(`union between`);
+console.log(`c (${c})`);
+console.log(`and`);
+console.log(`b (${b})`);
+console.log('===========');
+console.log(`${c.union(b)}`);
+console.log(``);
+console.log(``);
 
-console.log(' ');
-console.log('==========================');
-console.log('following should be false:');
-
-// contains
-console.log(a.contains(3));
-console.log(b.contains(101));
-console.log(b.contains(-1));
-console.log(n.contains(1.5));
-console.log(r.contains(0));
-
-// isSubset
-console.log(b.isSubset([301, 404, 550]));
-
-console.log(' ');
-console.log('==========================');
-console.log('union, intersect, difference');
-
-const x = new Set([1, 2, 3, 4, 5, 6, 7, 8]);
-const y = new Set([5, 6, 7, 8, 9, 10, 11, 12]);
-
-console.log('')
-console.log(`x:             ${x.array}`)
-console.log(`y:             ${y.array}`)
-console.log('')
-console.log(`union:         ${x.union(y)}`);
-console.log(`intersect:     ${x.intersect(y)}`);
-console.log(`difference:    ${x.difference(y)}`);
-
-
+console.log(`difference between`);
+console.log(`a (${a})`);
+console.log(`and`);
+console.log(`d (${d})`);
+console.log('===========');
+console.log(`${a.difference(d)}`);
+console.log(``);
+console.log(``);
 
 

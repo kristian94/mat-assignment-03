@@ -1,134 +1,213 @@
+const Range = require('./range');
+
+const INFINITY = '$';
+
 function Set(array, options = {}){
-    if(!array){
-        throw new Error('A set cannot be defined without at string eg "{1, 2, 3, ...}"')
+    // const inputArray = Array.isArray(array) ? array : [].reduce.call(arguments, (acc, el) => {acc.push(el); return acc}, []);
+    this._array = array;
+    this.ranges = array && ranges(array) || [];
+    this.naturalOnly = options.naturalOnly || this.inferNaturalOnly();
+}
+
+Set.prototype.isMember = function(number){
+    let isMember = false;
+    this.ranges.forEach(function(currentRange){
+        if(currentRange.containsNumber(number)) isMember = true;
+    });
+    return isMember;
+};
+
+Set.prototype.difference = function(input){
+    const inputSet = setFromArray(input);
+    const difference = new Set();
+
+    const ranges = sortRanges(this.ranges);
+    const inputRanges = sortRanges(inputSet.ranges);
+
+    ranges.forEach(function(range){
+        let diffArray;
+        inputRanges.forEach(function(inputRange){
+            diffArray = range.difference(inputRange);
+        });
+        if(diffArray){
+            diffArray.forEach((diffRange) => {
+                difference.ranges.push(diffRange);
+            })
+        }
+    });
+
+    return difference;
+};
+
+Set.prototype.intersect = function(input){
+    const inputSet = setFromArray(input);
+    const intersect = new Set();
+
+    const ranges = this.ranges;
+    const inputRanges = inputSet.ranges;
+
+    ranges.forEach(function(range){
+        let intersectRange;
+        inputRanges.forEach(function(inputRange){
+            let innerIntersectRange = range.intersect(inputRange);
+            if(innerIntersectRange){
+                intersectRange = innerIntersectRange;
+            }
+        });
+        if(intersectRange){
+            // console.log('yo')
+            intersect.ranges.push(intersectRange);
+        }
+    });
+
+    return intersect;
+};
+
+Set.prototype.isSubset = function(input){
+    const self = this;
+    const inputSet = setFromArray(input);
+    const ranges = this.ranges;
+    const inputRanges = inputSet.ranges;
+
+    let isSubset = true;
+    inputRanges.forEach(function(currentInputRange){
+        let isContained = false;
+        ranges.forEach(function(currentRange){
+            if(currentRange.containsRange(currentInputRange)){
+                isContained = true;
+            }
+        });
+        if(!isContained) isSubset = false;
+    });
+    return isSubset;
+};
+
+Set.prototype.isProperSubset = function(input){
+    const inputSet = setFromArray(input);
+    const isSubset = this.isSubset(inputSet);
+
+    if(isSubset){
+        const numberOfElements = this.getNumberOfElements();
+        const inputNumberOfElements = inputSet.getNumberOfElements();
+        const greaterNumberOfElements = (numberOfElements > inputNumberOfElements);
+        const lowerBound = inputSet.isLowerBound() && this.isLowerBound();
+        const upperBound = inputSet.isUpperBound() && this.isUpperBound();
+
+        return  greaterNumberOfElements
+            ||  (lowerBound && inputSet.getLowestValue() > this.getLowestValue())
+            ||  (upperBound && inputSet.getHighestValue() < this.getHighestValue())
+
+    }else{
+        return false;
     }
-    this.array = array;
-    // this.naturalOnly = options.naturalOnly || ;
-    this.naturalOnly = !nullOrUndef(options.naturalOnly) ? options.naturalOnly : this.inferNaturalOnly();
-    this.hasUpperBound = this.inferBound('upper');
-    this.hasLowerBound = this.inferBound('lower');
+};
+
+Set.prototype.union = function(input){
+    const union = new Set();
+    const inputSet = setFromArray(input);
+
+    const ranges = this.ranges;
+    const inputRanges = inputSet.ranges;
+    const combinedRanges = concatAndSortRanges(ranges, inputRanges);
+    const unionRanges = union.ranges;
+    unionRanges.push(combinedRanges.shift());
+    combinedRanges.forEach(function(currentRange){
+        const currentUnionIndex = unionRanges.length - 1;
+        const currentUnionRange = unionRanges[currentUnionIndex];
+        const mergedRange = currentUnionRange.tryMerge(currentRange);
+        if(mergedRange){
+            unionRanges[currentUnionIndex] = mergedRange;
+        }else{
+            unionRanges.push(currentRange);
+        }
+    });
+    return union;
+};
+
+//
+
+Set.prototype.isLowerBound = function(){
+    return this.ranges[0].min !== INFINITY;
+};
+
+Set.prototype.isUpperBound = function(){
+    const index = this.ranges.length - 1;
+    return this.ranges[index].max !== INFINITY;
+};
+
+Set.prototype.getLowestValue = function(){
+    return this.ranges[0].min;
+};
+
+Set.prototype.getHighestValue = function(){
+    const index = this.ranges.length - 1;
+    return this.ranges[index].max;
+};
+
+Set.prototype.getNumberOfElements = function(){
+    return this.ranges.reduce((acc, range) => {
+        return acc + range.getNumberOfElements()
+    }, 0)
+};
+
+Set.prototype.toString = function(){
+    return `{${this.ranges.join(', ')}}`
 };
 
 Set.prototype.inferNaturalOnly = function(){
     let naturalOnly = true;
-    this.array.forEach(function(element){
-        if(!isNaN(element)){
-            const index = Number(element).toString().indexOf('.');
-            if(index !== -1){
-                naturalOnly = false;
-            }
+
+    this._array || [].forEach(function(element){
+        if(!isNaN(element) && !Number.isInteger(element)) {
+            naturalOnly = false;
         }
     });
     return naturalOnly;
 };
 
-Set.prototype.inferBound = function(direction){
-    const isUpper = direction === 'upper';
+function concatAndSortRanges(rangesA, rangesB){
+    const combined = rangesA.concat(rangesB);
+    return sortRanges(combined);
+}
 
-    const index =
-        isUpper ? this.array.length - 1 :
-            0;
+function sortRanges(ranges){
+    return ranges.sort(function(a, b){
+        const aMin = a.min;
+        const bMin = b.min;
+        return  aMin === INFINITY && bMin === INFINITY  ? 0 :
+            aMin === INFINITY                       ? -1 :
+                bMin === INFINITY                       ? 1 :
+                aMin - bMin;
+    });
+}
 
-    const lastElement = this.array[index];
-
-    return !(lastElement === '...');
-};
-
-Set.prototype.isSubset = function(array){
-    for(let i = 0; i < array.length; i++){
-        const el = array[i];
-        if(!this.contains(el)) return false;
+function setFromArray(input){
+    if(input instanceof Set){
+        return input;
+    }else if(Array.isArray(input)){
+        return new Set(input);
+    }else if(!isNaN(input)){
+        return new Set([input]);
+    }else{
+        return '';
     }
-    return true;
-};
+}
 
-Set.prototype.union = function(input){
-    const union = [];
-    const array = arrayOrSetArray(input);
-    for(let i = 0; i < array.length; i++){
-        const el = array[i];
-        if(this.contains(el)) union.push(el);
-    }
-    return union;
-};
-
-Set.prototype.intersect = function(input){
-    const intersect = this.array.slice(0);
-    const array = arrayOrSetArray(input);
-    for(let i = 0; i < array.length; i++){
-        const el = array[i];
-        if(!this.contains(el)) intersect.push(el);
-    }
-    return intersect;
-};
-
-Set.prototype.difference = function(input){
-    const difference = [];
-    const inputIsSet = (input instanceof Set);
-    const inputSet = inputIsSet ? input : new Set(input);
-    const array = this.array;
-    for(let i = 0; i < array.length; i++){
-        const el = array[i];
-        if(!inputSet.contains(el)) difference.push(el);
-    }
-    return difference;
-};
-
-Set.prototype.contains = function(input, _array){
-    const self = this;
-    const array = _array || this.array;
-    // const inputIsArray = Array.isArray(input);
-
-    return (arrayContains.call(this, array, input));
-};
-
-function arrayContains(array, input){
-    for(let i = 0; i < array.length; i++){
-        const element = array[i];
-        const elementIsDots = element === '...';
-        if(elementIsDots){
-
-            // const inputIsDots = input = '...'; // do something if input is dots??
-
-            const nextElement = arrayNextOrBlank(array, i, 1);
-            const prevElement = arrayNextOrBlank(array, i, -1);
-            const isValidNumber = this.isValidNumber(input);
-
-            const match =
-                (!isValidNumber)                    ? false :
-                    (!!nextElement && !prevElement)     ? (input < nextElement) :
-                        (!nextElement && !!prevElement)     ? (input > prevElement) :
-                            (!nextElement && !prevElement)      ? !!(input)
-                                : (input > prevElement && input < nextElement);
-
-            if(match) return true;
-        }else{
-            if(input.toString() === element.toString()) return true;
+// needs a sorted array
+function ranges(array){
+    const ranges = [];
+    let rangeIndex = 0;
+    ranges.push(new Range(array[0]));
+    for(let i = 1; i < array.length; i++){
+        const current = array[i];
+        const currentRange = ranges[rangeIndex];
+        const wasPushed = currentRange.tryPush(current);
+        if(!wasPushed){
+            rangeIndex++;
+            ranges.push(new Range(current));
         }
     }
-    return false;
+    return ranges;
 }
-
-function arrayOrSetArray(input){
-    const inputIsSet = (input instanceof Set);
-    return inputIsSet ? input.array : input;
-}
-
-function nullOrUndef(input){
-    return input === null || input === undefined;
-}
-
-function arrayNextOrBlank(array, indexIn, modifier){
-    const index = indexIn + modifier;
-    const isWithinBounds = index >= 0 && index < array.length;
-    return isWithinBounds ? array[index] : '';
-}
-
-Set.prototype.isValidNumber = function(number){
-    if(this.naturalOnly){
-        return Number.isInteger(number);
-    }
-    return true;
-};
 
 module.exports = Set;
