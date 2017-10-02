@@ -2,7 +2,6 @@ const Set = require('./set');
 const Range = require('./range')
 const INFINITY = '$';
 
-
 const z = new Set([0, '...']);
 const n = new Set([1, '...']);
 const a = new Set([1, '...', 100]);
@@ -12,15 +11,10 @@ const d = new Set([1, '...', 5, 20, '...', 30]);
 const e = new Set([1, '...', 20]);
 const f = new Set([10, '...', 30]);
 
-// const rangeA = new Range(1, 5);
-// const rangeB = new Range(1, 100);
-//
-// console.log(rangeA.difference(rangeB));
-
 console.log(`67 is a member of n: ${n.isMember(67)}`);
 console.log(`0 is a member of n: ${n.isMember(0)}`);
 console.log(`55 is a member of a: ${a.isMember(55)}`);
-console.log('');
+console.log(``);
 
 console.log(`intersection of `);
 console.log(`e ${e}`);

@@ -133,8 +133,6 @@ Set.prototype.union = function(input){
     return union;
 };
 
-//
-
 Set.prototype.isLowerBound = function(){
     return this.ranges[0].min !== INFINITY;
 };
