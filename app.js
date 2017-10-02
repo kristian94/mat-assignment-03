@@ -1,5 +1,6 @@
 const Set = require('./set');
-const INFINITY = '$'
+const Range = require('./range')
+const INFINITY = '$';
 
 
 const z = new Set([0, '...']);
@@ -10,6 +11,11 @@ const c = new Set([1, 2, 3, 4]);
 const d = new Set([1, '...', 5, 20, '...', 30]);
 const e = new Set([1, '...', 20]);
 const f = new Set([10, '...', 30]);
+
+// const rangeA = new Range(1, 5);
+// const rangeB = new Range(1, 100);
+//
+// console.log(rangeA.difference(rangeB));
 
 console.log(`67 is a member of n: ${n.isMember(67)}`);
 console.log(`0 is a member of n: ${n.isMember(0)}`);
@@ -40,6 +46,24 @@ console.log(`and`);
 console.log(`d (${d})`);
 console.log('===========');
 console.log(`${a.difference(d)}`);
+console.log(``);
+console.log(``);
+
+console.log(`difference between`);
+console.log(`a (${a})`);
+console.log(`and`);
+console.log(`n (${n})`);
+console.log('===========');
+console.log(`${a.difference(n)}`);
+console.log(``);
+console.log(``);
+
+console.log(`complement:`);
+console.log(`a (${a})`);
+console.log(`and`);
+console.log(`d (${d})`);
+console.log('===========');
+console.log(`${a.complement(d)}`);
 console.log(``);
 console.log(``);
 

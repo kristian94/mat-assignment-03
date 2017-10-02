@@ -25,18 +25,27 @@ Set.prototype.difference = function(input){
     const inputRanges = sortRanges(inputSet.ranges);
 
     ranges.forEach(function(range){
-        let diffArray;
+        let differenceRanges = [range];
         inputRanges.forEach(function(inputRange){
-            diffArray = range.difference(inputRange);
+            let newDifferenceRanges = [];
+            differenceRanges.forEach(function(diffRange){
+                diffRange.difference(inputRange).forEach(function(finalDiff){
+                    newDifferenceRanges.push(finalDiff);
+                })
+            });
+            // if(newDifferenceRanges.length > 0){
+            differenceRanges = newDifferenceRanges;
+            // }
         });
-        if(diffArray){
-            diffArray.forEach((diffRange) => {
-                difference.ranges.push(diffRange);
-            })
-        }
+        difference.ranges = differenceRanges;
     });
 
     return difference;
+};
+
+Set.prototype.complement = function(domain){
+    const domainSet = setFromArray(domain);
+    return domainSet.difference(this);
 };
 
 Set.prototype.intersect = function(input){

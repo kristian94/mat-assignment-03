@@ -42,8 +42,11 @@ Range.prototype.difference = function(inputRange){
 
     return  inputRange.isTrueInf()              ? [] :
             !this.canIntersect(inputRange)      ? this :
-            !inputRange.hasLowerBound           ? [new Range(inputMax+1, max)] :
-            !inputRange.hasUpperBound           ? [new Range(min, inputMin-1)] :
+            !inputRange.hasLowerBound() && inputMax === max ? [] :
+            !inputRange.hasUpperBound() && inputMin === min ? [] :
+            !inputRange.hasLowerBound()         ? [new Range(inputMax+1, max)] :
+            !inputRange.hasUpperBound()         ? [new Range(min, inputMin-1)] :
+            (inputMin <= min && inputMax >= max) ? [] :
             (inputMin > min && inputMax < max)  ? [new Range(min, inputMin-1), new Range(inputMax+1, max)] :
             (inputMin <= min)                   ? [new Range(inputMax+1, max)] :
                                                   [new Range(min, inputMin-1)];
